@@ -1,11 +1,9 @@
-import { Button } from '@/components/ui/button'
-import React from 'react'
+import React, { use } from 'react'
 
 const Page = () => {
+ 
   return (
-    <Button variant="outline">
-      click me!
-    </Button>
+  <></>
   )
 }
 
