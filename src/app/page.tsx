@@ -1,19 +1,20 @@
-import { getQueryClient } from '@/trpc/server';
-import { dehydrate, HydrationBoundary, usePrefetchQuery } from '@tanstack/react-query';
-import { Suspense } from 'react';
-import { trpc } from '@/trpc/server';
-import Cleint from './client';
+'use client'
 
-const Page = async () => {
-  const queryClinet = getQueryClient();
-  void queryClinet.prefetchQuery(trpc.hello.queryOptions({ text : "hello"}));
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { useTRPC } from "@/trpc/client";
+import { Button } from "@/components/ui/button";
 
+const Page =  () => {
+
+  const trpc = useTRPC();
+  const invoke =  useMutation(trpc.invoke.mutationOptions({}));
+  
   return (
-    <HydrationBoundary state={dehydrate(queryClinet)}>
-      <Suspense>
-        <Cleint />
-      </Suspense>
-    </HydrationBoundary>
+    <div>
+      <Button onClick={()=>{ invoke.mutate({text:"hello world"})}}>
+        click me
+      </Button>
+    </div>
   );
 };
 
