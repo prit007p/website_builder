@@ -1,6 +1,6 @@
 'use client'
 
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation,  } from "@tanstack/react-query";
 import { useTRPC } from "@/trpc/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
