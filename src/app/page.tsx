@@ -15,7 +15,10 @@ const Page =  () => {
   return (
     <div>
       <Input value={prompt} onChange={(e) => setPrompt(e.target.value)} />
-      <Button onClick={() => { invoke.mutate({ text: prompt }) }}>
+      <Button onClick={() => { 
+          console.log(prompt);
+          invoke.mutate({ text: prompt }) 
+        }}>
         click me
       </Button>
     </div>
