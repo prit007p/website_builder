@@ -4,10 +4,11 @@ import { Sandbox } from "@e2b/code-interpreter";
 import { getSandbox, lastAssistantTextMessageContent } from "./utils";
 import { z } from "zod";
 import { PROMPT } from "@/app/prompt";
+import prisma from "@/lib/db";
 
-export const helloWorld = inngest.createFunction(
-  { id: "hello-world" },
-  { event: "test/hello.world" },
+export const codeagent = inngest.createFunction(
+  { id: "code-agent" },
+  { event: "code-agent/run" },
   async ({ event, step }) => {
     const sandboxId = await step.run("get-sandbox-id", async () => {
       const sandbox = await Sandbox.create(
@@ -20,7 +21,7 @@ export const helloWorld = inngest.createFunction(
       name: "agent-1",
       description:"expert coding angent",
       system:PROMPT,
-      model: gemini({ model: "gemini-2.0-flash", apiKey: process.env.API_KEY }),
+      model: gemini({ model: "gemini-2.5-flash", apiKey: process.env.API_KEY }),
       tools: [
         createTool({
           name: "terminal",
@@ -138,8 +139,6 @@ export const helloWorld = inngest.createFunction(
 
 
     const inputValue = event.data?.input;
-    
-    console.log("in function.ts",event);
 
     if (!inputValue) {
       throw new Error("event.data.input is required");
@@ -147,10 +146,40 @@ export const helloWorld = inngest.createFunction(
 
     const result = await network.run(inputValue);
 
+    const isError = !result.state.data.summary  || Object.keys(result.state.data.files|| {}).length===0;
+
     const sandboxurl = await step.run("get-sandbox-url", async () => {
       const sandbox = await getSandbox(sandboxId);
       const host = sandbox.getHost(3000);
       return `https://${host}`;
+    });
+
+    await step.run("save-result",async()=>{
+
+      if(isError){
+        return await prisma.message.create({
+          data:{
+            content:"something went wrong try again!",
+            role:'ASSISTANT',
+            type:"ERROR",
+          }
+        });
+      }
+
+      return await prisma.message.create({
+        data:{
+          content : result.state.data.summary,
+          role:'ASSISTANT',
+          type:'RESULT',
+          fragment:{
+            create:{
+              sandboxUrl:sandboxId,
+              title:"Fragment",
+              files:result.state.data.files
+            }
+          }
+        },
+      });
     });
 
     return { 
