@@ -10,6 +10,7 @@ export const codeagent = inngest.createFunction(
   { id: "code-agent" },
   { event: "code-agent/run" },
   async ({ event, step }) => {
+
     const sandboxId = await step.run("get-sandbox-id", async () => {
       const sandbox = await Sandbox.create(
         "pritbaldaniya/website_builder_template-2",
@@ -19,7 +20,7 @@ export const codeagent = inngest.createFunction(
 
     const agent = createAgent({
       name: "agent-1",
-      description:"expert coding angent",
+      description:"expert coding agent",
       system:PROMPT,
       model: gemini({ model: "gemini-2.5-flash", apiKey: process.env.API_KEY }),
       tools: [
@@ -131,7 +132,6 @@ export const codeagent = inngest.createFunction(
         if(summary){
           return;
         }
-
         return agent;
       }
     })
@@ -162,6 +162,7 @@ export const codeagent = inngest.createFunction(
             content:"something went wrong try again!",
             role:'ASSISTANT',
             type:"ERROR",
+            projectId:event.data.projectId
           }
         });
       }
@@ -171,6 +172,7 @@ export const codeagent = inngest.createFunction(
           content : result.state.data.summary,
           role:'ASSISTANT',
           type:'RESULT',
+          projectId:event.data.projectId,
           fragment:{
             create:{
               sandboxUrl:sandboxId,
